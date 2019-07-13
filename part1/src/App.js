@@ -1,31 +1,38 @@
 import React, { useState, useEffect } from 'react'
 import Note from './components/Note'
-import axios from 'axios'
+import noteSvc from './services/notes'
+import Notification from './components/Notification'
 
 const App = (props) => {
     const [notes, setNotes] = useState([])
     const [newNote, setNewNote] = useState('')
     const [showAll, setShowAll] = useState(true)
-
+    const [errorMessage, setErrorMessage] = useState('some error happened...')
     useEffect(() => {
-        axios.get('http://localhost:3001/notes')
-            .then(response => {
-                setNotes(response.data)
-                console.log('Promise fulfilled')
-                console.log(response)
+        noteSvc.getAll()
+            .then(initialNotes => {
+                setNotes(initialNotes)
             })
     }, [])
 
     const notesToShow = showAll ? notes: notes.filter(note => note.important === true)
 
     const toggleImportanceOf = id => {
-        const url = `http://localhost:3001/notes/${id}`
         const note = notes.find(n => n.id === id)
         const changedNote = {...note, important: !note.important}
 
-        axios
-            .put(url, changedNote).then(response => {
-                setNotes(notes.map(note => note.id !== id ? note : response.data))
+       noteSvc.update(id, changedNote)
+                .then(updatedNote => {
+                setNotes(notes.map(note => note.id !== id ? note : updatedNote))
+            })
+            .catch(error => {
+                setErrorMessage(
+                    `Note '{$note.content}' was already removed from the server`
+                )
+                setTimeout(() => {
+                    setErrorMessage(null)
+                }, 5000)
+                setNotes(notes.filter(n => n.id !== id))
             })
     }
 
@@ -46,10 +53,9 @@ const App = (props) => {
             important: Math.random() > 0.5,
         }
 
-    axios
-        .post('http://localhost:3001/notes', note)
-        .then(response => {
-            setNotes(notes.concat(response.data))
+    noteSvc.create(note)
+        .then(newNote => {
+            setNotes(notes.concat(newNote))
             setNewNote('')
         })
     }
@@ -62,6 +68,7 @@ const App = (props) => {
     return (
         <div>
             <h1>Notes</h1>
+            <Notification message={errorMessage} />
             <div>
                 <button onClick={() => setShowAll(!showAll)}>
                     show {showAll ? 'important' : 'all' }
