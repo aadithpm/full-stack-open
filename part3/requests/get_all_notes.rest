@@ -1,1 +1,11 @@
 GET http://localhost:3001/notes
+
+###
+
+POST http://localhost:3001/notes
+content-type: application/json
+
+{
+    "content": "who needs postman",
+    "important": true
+}
