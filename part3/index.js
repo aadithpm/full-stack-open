@@ -30,7 +30,6 @@ const generateID = () => {
     return maxId + 1
 }
 
-
 app.get('/', (req, res) => {
     res.end('<h1> Hello world! </h1>')
 })
@@ -62,7 +61,7 @@ app.post('/notes', (req, res) => {
 
     const note = {
         content: body.content,
-        important: body.important ? true : false,
+        important: body.important || false,
         date: new Date(),
         id: generateID(),
     }
@@ -78,6 +77,12 @@ app.delete('/notes/:id', (request, response) => {
 
     response.status(204).end()
 })
+
+const unknownEndpoint = (req, res) => {
+    res.status(404).send({error: 'unknown endpoint'})
+}
+
+app.use(unknownEndpoint)
 
 const port = 3001
 app.listen(port, () => {
