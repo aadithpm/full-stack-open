@@ -1,9 +1,10 @@
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
+const cors = require('cors')
 
 app.use(bodyParser.json())
-
+app.use(cors())
 
 let notes = [{
     id: 1,
@@ -84,7 +85,7 @@ const unknownEndpoint = (req, res) => {
 
 app.use(unknownEndpoint)
 
-const port = 3001
+const port = process.env.PORT || 3001
 app.listen(port, () => {
     console.log(`Server: port ${port}`)
 })
